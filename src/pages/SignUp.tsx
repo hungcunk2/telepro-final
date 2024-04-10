@@ -109,6 +109,21 @@ const SignUp: FC = () => {
     // Define your sign-in logic here
   };
 
+  const handleConfirmOTP = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      await vertifyOTP(); // Verify OTP
+      // Sign up logic after OTP confirmation
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      await updateProfile(user, { displayName });
+      setCurrentUser(user);
+      navigate('/chat'); // Navigate to chat page after successful signup
+    } catch (error) {
+      setError(error.message || 'An error occurred.');
+    }
+  };
+
   if (currentUser) {
     return <Navigate to="/" />;
   }
@@ -137,7 +152,7 @@ const SignUp: FC = () => {
               <h1 className="text-black whitespace-nowrap text-center text-3xl font-medium">Register</h1>
               {error && <div className="auth__error">{error}</div>}
               <div className="flex items-center justify-center gap-4">
-                <form onSubmit={requestOTP}>
+                <form onSubmit={expandForm ? handleConfirmOTP : requestOTP}>
                   <div className="mb-3">
                     <label className="form-label  text-black font-medium">Username</label>
                     <input
@@ -204,14 +219,24 @@ const SignUp: FC = () => {
                     />
                   </div>
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <button
-                      disabled={registering}
-                      className="flex min-w-[200px] cursor-pointer items-center gap-3 rounded-md bg-white p-2 text-black transition duration-300 hover:brightness-90 disabled:!cursor-default disabled:!brightness-75"
-                      type="submit"
-                      style={{ color: "#FFFFFF", backgroundColor: "#0068FF" }}
-                    >
-                      Sign Up
-                    </button>
+                    {expandForm ? (
+                      <button
+                        className="flex min-w-[200px] cursor-pointer items-center gap-3 rounded-md bg-white p-2 text-black transition duration-300 hover:brightness-90"
+                        type="submit"
+                        style={{ color: "#FFFFFF", backgroundColor: "#0068FF" }}
+                      >
+                        Confirm OTP
+                      </button>
+                    ) : (
+                      <button
+                        disabled={registering}
+                        className="flex min-w-[200px] cursor-pointer items-center gap-3 rounded-md bg-white p-2 text-black transition duration-300 hover:brightness-90 disabled:!cursor-default disabled:!brightness-75"
+                        type="submit"
+                        style={{ color: "#FFFFFF", backgroundColor: "#0068FF" }}
+                      >
+                        Sign Up
+                      </button>
+                    )}
                     <button
                       className="flex min-w-[200px] cursor-pointer items-center gap-3 rounded-md bg-white p-2 text-black transition duration-300 hover:brightness-90"
                       onClick={handleSignIn}
